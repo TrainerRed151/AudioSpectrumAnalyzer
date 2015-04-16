@@ -42,16 +42,19 @@ void display() {
 
 int main(int argc, const char *argv[]) {
     for (i = 0; i < 10; i++) {
-        freq[i] = (int) (pow(2.0, 5.0+i)*n/fs + 1);
-        printf("%d\n", freq[i]);
+        freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
     }
     
     for (i = 0; i < n; i++) {
-        data[i] = sin(2*i*fs/n);
+        data[i] = sin(pow(2.0,15.0)*2*3.14159*i/fs);
     }
 
     calcLevels(5);
     display();
+
+    for (i = 0; i < 10; i++) {
+        //printf("%d, %d\n", freq[i], level[i]);
+    }
 
     return 0;
 }
