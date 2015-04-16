@@ -4,11 +4,12 @@ SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 TARGET = run
 
+USER_DEFINES=
 
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) -o $@ $^ -lm
+	$(CC) -o $@ $^ -lm $(USER_DEFINES)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
