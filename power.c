@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
 #include "fft.h"
 
-#define n 1024
+#define n 4096
 
+#define KRED "\x1B[31m"
+#define KYEL "\x1B[33m"
+#define KGRN "\x1B[32m"
+#define KWHT "\x1B[37m"
 
 double data[n], mag[n/2], music;
 double re, im;
 int i, j, k, fs = 44100;
 int freq[10], level[10];
-
+int count;
 
 void calcLevels(double time) {
     realft(data-1, n, 1);
@@ -22,21 +28,32 @@ void calcLevels(double time) {
     }
 
     for (j = 0; j < 10; j++) {
-        level[j] = 10*log10(mag[freq[j]]);
+        level[j] = 0.5*(mag[freq[j]] + mag[freq[j]+1]);
     }
 }
 
 void display() {
-    for (j = 30; j > 0; j--) {
+    count = 0;
+    for (j = n/4; j > 0; j -= n/(30*4)) {
         for (k = 0; k < 10; k++) {
             if (level[k] >= j) {
-                printf("x");
+                if (count < 3) {
+                    printf("%sxx ", KRED);
+                }
+                else if (count < 10) {
+                    printf("%sxx ", KYEL);
+                }
+                else {
+                    printf("%sxx ", KGRN);
+                }
             }
             else {
-                printf(" ");
+                printf("   ");
             }
         }
-        printf("\n");
+
+        printf("%s\n", KWHT);
+        count++;
     }
 }
 
@@ -45,16 +62,25 @@ int main(int argc, const char *argv[]) {
         freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
     }
     
-    for (i = 0; i < n; i++) {
-        data[i] = sin(pow(2.0,15.0)*2*3.14159*i/fs);
+    clock_t start, end;
+    start = clock();
+
+    for (i = 0; i < 10000; i++) {
+        for (i = 0; i < n; i++) {
+            data[i] = sin(pow(2.0,atof(argv[1]))*2*3.14159*i/fs);
+        }
+        
+        calcLevels(5);
+        display();
     }
 
-    calcLevels(5);
-    display();
+    end = clock();
 
-    for (i = 0; i < 10; i++) {
-        //printf("%d, %d\n", freq[i], level[i]);
-    }
+    printf("Time: %f\n", (float) (end-start) / (float) CLOCKS_PER_SEC);
+
+    //for (i = 0; i < 10; i++) {
+    //    printf("%d: %d, %d\n", (int) pow(2.0, 5.0+i), freq[i]*fs/n, level[i]);
+    //}
 
     return 0;
 }
