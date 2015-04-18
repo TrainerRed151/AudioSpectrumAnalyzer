@@ -17,6 +17,7 @@ int i, j, k, fs = 44100;
 int freq[10], level[10];
 int count;
 
+
 void calcLevels(double time) {
     realft(data-1, n, 1);
 
@@ -62,25 +63,29 @@ int main(int argc, const char *argv[]) {
         freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
     }
     
-    clock_t start, end;
-    start = clock();
+    //clock_t start, end;
+    //start = clock();
 
-    for (i = 0; i < 10000; i++) {
+    //for (i = 0; i < 10000; i++) {
         for (i = 0; i < n; i++) {
             data[i] = sin(pow(2.0,atof(argv[1]))*2*3.14159*i/fs);
         }
         
         calcLevels(5);
         display();
-    }
+    //}
 
-    end = clock();
+    //end = clock();
 
-    printf("Time: %f\n", (float) (end-start) / (float) CLOCKS_PER_SEC);
+    //printf("Time: %f\n", (float) (end-start) / (float) CLOCKS_PER_SEC);
 
     //for (i = 0; i < 10; i++) {
     //    printf("%d: %d, %d\n", (int) pow(2.0, 5.0+i), freq[i]*fs/n, level[i]);
     //}
+
+    //FILE *music
+    //music = fopen("music.dat", "r");
+
 
     return 0;
 }
