@@ -1,10 +1,10 @@
 library(tuneR)
 
-music <- readWave("violin.wav")
+music <- readWave("test.wav")
 
 #s <- 90000
 
-dx <- 1024
+dx <- 32768
 
 fs <- music@samp.rate
 
@@ -19,7 +19,7 @@ fi <- floor(ff)
 spectrum <- function(s) {
     ps <- fft(music@left[s:(s+dx)])
     #plot(xx, abs(ps), type="l", xlim=c(32,16384), log="xy")
-    sa <- 10*log10(abs(ps[fi]))
+    sa <- log10(abs(ps[fi]))
     print(sa)
 }
 
