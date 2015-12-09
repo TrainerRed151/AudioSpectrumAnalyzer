@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include "fft.h"
 
 #define n 4096
@@ -18,7 +19,11 @@ int freq[10], level[10];
 int count;
 
 
-void calcLevels(double time) {
+void makeData(double time) {
+    
+}
+
+void calcLevels() {
     realft(data-1, n, 1);
 
     mag[0] = sqrt(data[0]*data[0]);
@@ -62,7 +67,58 @@ int main(int argc, const char *argv[]) {
     for (i = 0; i < 10; i++) {
         freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
     }
+
+    FILE *mp, *info;
+
+    system("rm info");
+    system("touch info");
+
+    mp = popen("mplayer -slave -quiet violin.wav > info", "w");
+
+    info = fopen("info", "r");
+ 
+    char str[55];
+
+    for (i = 0; i < 20; i++) {
+        fgets(str, 55, info);
+    }
+
+    fflush(info);
+    system("rm info");
+    sleep(1);
+
+    for (i = 0; i < 30; i++) {
+        printf("\n");
+    }
+
+    fputs("get_property time_pos\n", mp);
+    fflush(mp);
+    fgets(str, 55, info);
+    fflush(info);
+
+    for (i = 0; i < 100; i++) {
+        fputs("get_property time_pos\n", mp);
+        fflush(mp);
+        fgets(str, 55, info);
+        fflush(info);
+
+        //if (str[0] != 'A') {
+        //    printf("%s\n", str);
+        //    break;
+        //}
+
+        printf("%f\n", atof(str+13));
+    }
+
+    fputs("stop\n", mp);
+    fclose(mp);
     
+    return 0;
+}
+/*
+
+
+
     //clock_t start, end;
     //start = clock();
 
@@ -89,3 +145,5 @@ int main(int argc, const char *argv[]) {
 
     return 0;
 }
+
+*/
