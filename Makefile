@@ -9,7 +9,7 @@ USER_DEFINES=
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) -o $@ $^ -lm $(USER_DEFINES)
+	$(CC) -o $@ $^ -lm -lncurses $(USER_DEFINES)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<

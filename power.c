@@ -1,26 +1,31 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <time.h>
+//#include <time.h>
 #include <unistd.h>
 #include <string.h>
 #include "fft.h"
+#include <ncurses.h>
 
-#define n 32768
-#define sp 10000000
+#define n 2048
+#define sp 5000000
 
 #define KRED "\x1B[31m"
 #define KYEL "\x1B[33m"
 #define KGRN "\x1B[32m"
 #define KWHT "\x1B[37m"
+//#define KRED ""
+//#define KYEL ""
+//#define KGRN ""
+//#define KWHT ""
 
 double data[n], mag[n/2];
 double musicTime[sp], musicLeft[sp];
 double re, im;
-int i, j, k, fs = 44100;
+int i, j, k, fs = 32768;
 int freq[10], level[10];
 int count, tindex, chillTemp;
-FILE *dfile;
+//FILE *dfile;
 
 
 void readInMusic() {
@@ -44,6 +49,7 @@ void readInMusic() {
 }
 
 void makeData(double time) {
+    time = time + 0.2;
     for (i = tindex; i < sp; i++) {
         if (time <= musicTime[i]) {
             tindex = i;
@@ -88,7 +94,8 @@ void calcLevels() {
 }
 
 void display() {
-    dfile = fopen("display", "w");
+    //dfile = fopen("display", "w");
+    move(0,0);
     count = 0;
     //for (j = n/4; j > 0; j -= n/(30*4)) {
     for (j = 60; j > 0; j-=2) {
@@ -96,34 +103,38 @@ void display() {
             if (level[k] >= j) {
                 if (count < 3) {
                     //printf("%sxx  ", KRED);
-                    fprintf(dfile, "%sxx  ", KRED);
-                    //printf("xx ");
+                    //fprintf(dfile, "%sxx  ", KRED);
+                    attron(COLOR_PAIR(2));
+                    printw("xx  ");
                 }
                 else if (count < 10) {
                     //printf("%sxx  ", KYEL);
-                    fprintf(dfile, "%sxx  ", KYEL);
-                    //printf("xx ");
+                    //fprintf(dfile, "%sxx  ", KYEL);
+                    attron(COLOR_PAIR(3));
+                    printw("xx  ");
                 }
                 else {
                     //printf("%sxx  ", KGRN);
-                    fprintf(dfile, "%sxx  ", KGRN);
-                    //printf("xx ");
+                    //fprintf(dfile, "%sxx  ", KGRN);
+                    attron(COLOR_PAIR(4));
+                    printw("xx  ");
                 }
             }
             else {
                 //printf("    ");
-                fprintf(dfile, "    ");
-                //printf("sss");
+                //fprintf(dfile, "    ");
+                printw("    ");
             }
         }
 
         //printf("%s\n", KWHT);
-        fprintf(dfile, "%s\n", KWHT);
-        //printf("\n");
+        //fprintf(dfile, "%s\n", KWHT);
+        attron(COLOR_PAIR(1));
+        printw("\n");
         count++;
     }
 
-    fclose(dfile);
+    //fclose(dfile);
 }
 
 void chill(int ct) {
@@ -173,7 +184,15 @@ int main(int argc, const char *argv[]) {
     fgets(str, 55, info);
     fflush(info);
 
-    //for (i = 0; i < 100; i++) {
+    system("clear");
+
+    initscr();
+    start_color();
+    init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    init_pair(2, COLOR_RED, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_GREEN, COLOR_BLACK);
+    //for (i = 0; i < 10000; i++) {
     while (1) {
         fputs("get_property time_pos\n", mp);
         fflush(mp);
@@ -195,10 +214,13 @@ int main(int argc, const char *argv[]) {
         //}
         //system("clear");
         display();
+        refresh();
         //sleep(1);
         //chill(100000);
     }
 
+
+    endwin();
     fputs("stop\n", mp);
     fclose(mp);
     
