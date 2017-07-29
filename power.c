@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-//#include <time.h>
 #include <unistd.h>
 #include <string.h>
 #include "fft.h"
 #include <ncurses.h>
 
-#define n 2048
-#define sp 5000000
+#define n 16384
 
 #define KRED "\x1B[31m"
 #define KYEL "\x1B[33m"
@@ -19,46 +17,40 @@
 //#define KGRN ""
 //#define KWHT ""
 
-double data[n], mag[n/2];
-double musicTime[sp], musicLeft[sp];
+double data[n], music[n], mag[n/2];
 double re, im;
 int i, j, k, fs = 32768;
 int freq[10], level[10];
-int count, tindex, chillTemp;
+char buf[2];
+int count;//, tindex, chillTemp;
 //FILE *dfile;
 
-
+/*
 void readInMusic() {
-    FILE *mfile;
-    mfile = fopen("music.dat", "r");
-
-    char line[55];
-    char *pch;
-
-    for (i = 0; i < sp; i++) {
-        fgets(line, 55, mfile);
-        
-        pch = strtok(line, " ");
-        musicTime[i] = atof(pch);
-
-        pch = strtok(NULL, " ");
-        musicLeft[i] = atof(pch);
-        //musicLeft[i] = 0.0;
+    for (i = 1; i < n; i++) {
+        music[i-1] = music[i];
+        data[i-1] = music[i];
     }
-    //musicLeft[0] = 1.0;
+    
+    fflush(stdin);
+    fread(buf, 4, 1, stdin);
+    music[n-1] = (int)*(short*)buf + (int)*(short*)(buf+2);
+    //printf("%f\n", data[n-1]);
 }
 
-void makeData(double time) {
-    time = time + 0.2;
-    for (i = tindex; i < sp; i++) {
-        if (time <= musicTime[i]) {
-            tindex = i;
-            break;
-        }
-    }
+*/
 
-    for (i = 0; i < n; i++) {
-        data[i] = musicLeft[tindex+i];
+void readInMusic() {
+    i = 0;
+    fflush(stdin);
+    while (fread(buf, 4, 1, stdin)) {
+        data[i] = (int)*(short*)buf + (int)*(short*)(buf+2);
+        //printf("%f\n", data[i]);
+        
+        i++;
+        if (i >= n) {
+            return;
+        }
     }
 }
 
@@ -72,23 +64,17 @@ void calcLevels() {
         //re = data[i];
         //im = data[n-i];
         mag[j] = sqrt(re*re + im*im);
+        //printf("%f\n", mag[j]);
     }
 
 
-    //for (i = 0; i < n/2; i+=100) {
-    //    printf("%d: %f\n", i, mag[i]);
-    //}
-    //printf("%f\n", mag[2047]);
-    //printf("%f\n", mag[2048]);
-    //printf("%f\n", mag[2090]);
-    
-    //sleep(1);
-
-
     for (j = 0; j < 10; j++) {
-        level[j] = 0.5*(mag[freq[j]] + mag[freq[j]+1]);
+        //level[j] = (mag[freq[j-1]] + mag[freq[j]] + mag[freq[j+2]])/3.0;
+        level[j] = mag[freq[j]];
         //printf("%d\n", level[j]);
-        level[j] = (int) (20*log10(level[j]+1.0) + j);
+        //level[j] = (int) (5*log10(level[j]+1.0));
+        //printf("%d\n", level[j]);
+        level[j] = 1e-5*level[j];
         //printf("%d\n", level[j]);
     }
 }
@@ -98,7 +84,7 @@ void display() {
     move(0,0);
     count = 0;
     //for (j = n/4; j > 0; j -= n/(30*4)) {
-    for (j = 60; j > 0; j-=2) {
+    for (j = 50; j > 0; j-=2) {
         for (k = 0; k < 10; k++) {
             if (level[k] >= j) {
                 if (count < 3) {
@@ -137,53 +123,16 @@ void display() {
     //fclose(dfile);
 }
 
-void chill(int ct) {
-    for (i = 0; i < ct; i++) {
-        chillTemp = pow(2.0,5.0);
-    }
-}
-
 int main(int argc, const char *argv[]) {
-    readInMusic();
-
-    //for (i = 0; i < 10*n; i++) {
-    //    printf("%f: %f\n", musicTime[i], musicLeft[i]);
-    //}
-   
-    //return 0;
-
     for (i = 0; i < 10; i++) {
-        freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
+        //freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
+        freq[i] = (int) (pow(2.0, 4.0+i));
+        //printf("%d\n", freq[i]);
     }
 
-    FILE *mp, *info;
+    //freq = {16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
 
-    system("rm info");
-    system("touch info");
-
-    mp = popen("mplayer -slave -quiet violin.wav > info", "w");
-
-    info = fopen("info", "r");
- 
-    char str[55];
-
-    for (i = 0; i < 20; i++) {
-        fgets(str, 55, info);
-    }
-
-    fflush(info);
-    system("rm info");
-    //sleep(1);
-
-    //for (i = 0; i < 30; i++) {
-    //    printf("\n");
-    //}
-
-    fputs("get_property time_pos\n", mp);
-    fflush(mp);
-    fgets(str, 55, info);
-    fflush(info);
-
+    
     system("clear");
 
     initscr();
@@ -192,21 +141,9 @@ int main(int argc, const char *argv[]) {
     init_pair(2, COLOR_RED, COLOR_BLACK);
     init_pair(3, COLOR_YELLOW, COLOR_BLACK);
     init_pair(4, COLOR_GREEN, COLOR_BLACK);
-    //for (i = 0; i < 10000; i++) {
+    
     while (1) {
-        fputs("get_property time_pos\n", mp);
-        fflush(mp);
-        fgets(str, 55, info);
-        fflush(info);
-
-        //if (str[0] != 'A') {
-        //    printf("%s\n", str);
-        //    break;
-        //}
-
-        //printf("%f\n", atof(str+13));
-
-        makeData(atof(str+13));
+        readInMusic();
         calcLevels();
         //system("clear");
         //for (i = 0; i < 40; i++) {
@@ -221,8 +158,6 @@ int main(int argc, const char *argv[]) {
 
 
     endwin();
-    fputs("stop\n", mp);
-    fclose(mp);
     
     return 0;
 }
