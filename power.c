@@ -1,3 +1,5 @@
+// Copyright © 2017 Brian Pomerantz. All Rights Reserved.
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -6,7 +8,9 @@
 #include "fft.h"
 #include <ncurses.h>
 
-#define n 16384
+#define n 2048
+#define maxScreen 50
+#define scale 200000
 
 #define KRED "\x1B[31m"
 #define KYEL "\x1B[33m"
@@ -19,10 +23,11 @@
 
 double data[n], music[n], mag[n/2];
 double re, im;
-int i, j, k, fs = 32768;
+int i, j, k, fs = 44100;
 int freq[10], level[10];
 char buf[2];
 int count;//, tindex, chillTemp;
+//double levelMax = n*n*3;
 //FILE *dfile;
 
 /*
@@ -39,6 +44,19 @@ void readInMusic() {
 }
 
 */
+
+double moveAvg(int m) {
+    double sum = 0, norm = 0, kernel;
+    double l2m = log2(m);
+
+    for (i = m/2; i < m*2; i++) {
+        kernel = -(log2(i)-l2m+1)*(log2(i)-l2m-1)*fs/n;
+        sum += kernel*mag[i];
+        norm += kernel;
+    }
+
+    return sum/norm;
+}
 
 void readInMusic() {
     i = 0;
@@ -69,12 +87,14 @@ void calcLevels() {
 
 
     for (j = 0; j < 10; j++) {
-        //level[j] = (mag[freq[j-1]] + mag[freq[j]] + mag[freq[j+2]])/3.0;
-        level[j] = mag[freq[j]];
+        level[j] = moveAvg(freq[j]);
+        //level[j] = mag[freq[j]];
         //printf("%d\n", level[j]);
         //level[j] = (int) (5*log10(level[j]+1.0));
+        //level[j] = maxScreen*asinh(level[j]/scale)/asinh(levelMax/scale);
         //printf("%d\n", level[j]);
-        level[j] = 1e-5*level[j];
+        //level[j] = sinh(1e-5*level[j]/8);
+        level[j] = 0.5e-5*level[j];
         //printf("%d\n", level[j]);
     }
 }
@@ -84,7 +104,7 @@ void display() {
     move(0,0);
     count = 0;
     //for (j = n/4; j > 0; j -= n/(30*4)) {
-    for (j = 50; j > 0; j-=2) {
+    for (j = maxScreen; j > 0; j-=2) {
         for (k = 0; k < 10; k++) {
             if (level[k] >= j) {
                 if (count < 3) {
@@ -125,14 +145,14 @@ void display() {
 
 int main(int argc, const char *argv[]) {
     for (i = 0; i < 10; i++) {
-        //freq[i] = (int) (pow(2.0, 5.0+i)*n/fs);
-        freq[i] = (int) (pow(2.0, 4.0+i));
-        //printf("%d\n", freq[i]);
+        freq[i] = (int) (pow(2.0, i));
+        //freq[i] = (int) (pow(2.0, 3.0+i));
+        printf("%d\n", freq[i]);
     }
 
-    //freq = {16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
+    //freq = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
 
-    
+   
     system("clear");
 
     initscr();
@@ -141,7 +161,7 @@ int main(int argc, const char *argv[]) {
     init_pair(2, COLOR_RED, COLOR_BLACK);
     init_pair(3, COLOR_YELLOW, COLOR_BLACK);
     init_pair(4, COLOR_GREEN, COLOR_BLACK);
-    
+  
     while (1) {
         readInMusic();
         calcLevels();
