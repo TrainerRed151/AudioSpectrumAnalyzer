@@ -94,7 +94,7 @@ void calcLevels() {
         //level[j] = maxScreen*asinh(level[j]/scale)/asinh(levelMax/scale);
         //printf("%d\n", level[j]);
         //level[j] = sinh(1e-5*level[j]/8);
-        level[j] = 0.5e-5*level[j];
+        level[j] = 0.3e-5*level[j];
         //printf("%d\n", level[j]);
     }
 }

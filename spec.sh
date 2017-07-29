@@ -1,8 +1,3 @@
 #!/bin/bash
 
-rm display
-touch display
-./run &
-clear
-watch --color -n 0.1 cat display
-rm display
+parec -d alsa_output.pci-0000_00_1b.0.analog-stereo.monitor --channels=1 --channel-map=mono | ./run
