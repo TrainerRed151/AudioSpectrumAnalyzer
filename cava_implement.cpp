@@ -4,32 +4,36 @@
 #include <ncurses.h>
 #include <string>
 
-#define maxScreen 50
-
 using namespace std;
 
-void display(int level[10]) {
+void display(int level[10], int maxScreen, int maxCols) {
+    int num_xs = maxCols/10 - 2;
     move(0,0);
     int count = 0;
-    for (int j = maxScreen; j > 0; j-=2) {
+    for (int j = maxScreen; j > 0; j--) {
         for (int k = 0; k < 10; k++) {
             if (level[k] >= j) {
-                if (count < 3) {
+                if (count < maxScreen*0.1) {
                     attron(COLOR_PAIR(2));
-                    printw("xx  ");
                 }
-                else if (count < 10) {
+                else if (count < maxScreen*0.35) {
                     attron(COLOR_PAIR(3));
-                    printw("xx  ");
                 }
                 else {
                     attron(COLOR_PAIR(4));
-                    printw("xx  ");
+                }
+
+                for (int c = 0; c < num_xs; c++) {
+                  printw("x");
                 }
             }
             else {
-                printw("    ");
+                for (int c = 0; c < num_xs; c++) {
+                  printw(" ");
+                }
             }
+
+            printw("  ");
         }
 
         attron(COLOR_PAIR(1));
@@ -39,7 +43,6 @@ void display(int level[10]) {
 }
 
 int main(int argc, const char *argv[]) {
-
     system("clear");
 
     initscr();
@@ -53,24 +56,20 @@ int main(int argc, const char *argv[]) {
     string data;
     int leftPos, rightPos;
     int level[10];
+    int lines = atoi(argv[1]);
+    int cols = atoi(argv[2]);
 
     while (1) {
         cin >> data;
         
-        //cout << data << endl;
-
         leftPos = 0;
         for (int i = 0; i < 10; i++) {
             rightPos = data.find(';', leftPos);
-            //cout << rightPos << ", " << data.substr(leftPos, rightPos) << " ";
             level[i] = stoi(data.substr(leftPos, rightPos));
-            //cout << level[i] << endl;
             leftPos = rightPos + 1;
         }
-        
 
-
-        display(level);
+        display(level, lines, cols);
         refresh();
     }
 

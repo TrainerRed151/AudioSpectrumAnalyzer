@@ -1,0 +1,16 @@
+#!/bin/bash
+
+CAVA_DIR=/home/brian/.config/cava
+ASA_DIR=/home/brian/Code/AudioSpectrumAnalyzer
+CAVA_CONFIG=audio_spectrum_analyzer_config
+
+echo "[general]" > $CAVA_DIR/$CAVA_CONFIG
+echo "bars = 10" >> $CAVA_DIR/$CAVA_CONFIG
+echo "[output]" >> $CAVA_DIR/$CAVA_CONFIG
+echo "method = raw" >> $CAVA_DIR/$CAVA_CONFIG
+echo "channels = mono" >> $CAVA_DIR/$CAVA_CONFIG
+echo "mono_option = average" >> $CAVA_DIR/$CAVA_CONFIG
+echo "data_format = ascii" >> $CAVA_DIR/$CAVA_CONFIG
+echo "ascii_max_range = `tput lines`" >> $CAVA_DIR/$CAVA_CONFIG
+
+cava -p $CAVA_DIR/$CAVA_CONFIG | $ASA_DIR/run `tput lines` `tput cols`

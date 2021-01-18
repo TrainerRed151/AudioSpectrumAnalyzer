@@ -1,7 +1,7 @@
-CC = gcc
+CC = g++
 CFLAGS = -Wall
-SOURCES = $(wildcard *.c)
-OBJECTS = $(SOURCES:.c=.o)
+SOURCES = $(wildcard *.cpp)
+OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = run
 
 USER_DEFINES=
